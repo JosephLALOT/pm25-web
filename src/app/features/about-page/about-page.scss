@@ -1,0 +1,79 @@
+.layout {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 40px;
+}
+
+.toc {
+  position: sticky;          // reste visible quand on défile
+  top: 16px;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+}
+.toc-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.toc a { color: var(--ink); }
+.toc a:hover { color: var(--accent); }
+
+.toc-mobile { display: none; }
+
+article { max-width: 680px; }
+article h1 { margin-top: 0; }
+section { margin-bottom: 32px; scroll-margin-top: 16px; }
+section h2 { font-size: 18px; margin-bottom: 8px; }
+p { line-height: 1.6; }
+
+.model-box {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.model-box div { display: flex; flex-direction: column; gap: 4px; }
+.label { font-size: 12px; color: var(--muted); }
+
+.callout {
+  padding: 12px 16px;
+  border: 2px dashed var(--ink);
+  border-radius: 8px;
+  line-height: 1.6;
+}
+
+.table-wrap { overflow-x: auto; }     // le tableau défile seul s'il est trop large
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); }
+th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.num { white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+// mobile: one column, collapsible table of contents
+@media (max-width: 800px) {
+  .layout { grid-template-columns: 1fr; }
+  .toc { display: none; }
+  .toc-mobile {
+    display: block;
+    margin-bottom: 24px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+  .toc-mobile summary { cursor: pointer; font-weight: 600; }
+  .toc-mobile a { display: block; padding: 8px 0; }
+  .model-box { grid-template-columns: repeat(2, 1fr); }
+}
+.unit { text-transform: none; }   // keep µ lowercase in uppercase headers

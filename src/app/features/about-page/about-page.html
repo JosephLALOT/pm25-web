@@ -1,1 +1,96 @@
-<p>about-page works!</p>
+<div class="layout">
+  <!-- desktop: table of contents on the left -->
+  <aside class="toc">
+    <span class="toc-title">On this page</span>
+    @for (s of sections; track s.id) {
+      <a routerLink="." [fragment]="s.id">{{ s.label }}</a>
+    }
+  </aside>
+
+  <article>
+    <h1>About this project</h1>
+
+    <!-- mobile: collapsible table of contents -->
+    <details class="toc-mobile">
+      <summary>On this page</summary>
+      @for (s of sections; track s.id) {
+        <a routerLink="." [fragment]="s.id">{{ s.label }}</a>
+      }
+    </details>
+
+    <section id="pm25">
+      <h2>What is PM2.5</h2>
+      <p>
+        PM2.5 are fine particles smaller than 2.5 micrometres, about 30 times thinner than a hair.
+        They come mainly from traffic, industry and burning. They go deep into the lungs and the blood,
+        and long exposure raises the risk of heart and lung disease.
+      </p>
+    </section>
+
+    <section id="data">
+      <h2>Where the data comes from</h2>
+      <p>
+        Current values, history and the CAMS forecast come from the
+        <a href="https://open-meteo.com/en/docs/air-quality-api" target="_blank" rel="noopener">Open-Meteo Air Quality API</a>.
+        Our server fetches them every hour and keeps them in memory.
+      </p>
+    </section>
+
+    <section id="forecast">
+      <h2>How we forecast</h2>
+      <p>
+        Our model was trained by the data science part of the team on past PM2.5 values.
+        Every hour, it predicts the next hours and days for each city. We show it next to the
+        CAMS forecast so you can compare both.
+      </p>
+      <div class="model-box">
+        <div><span class="label">Model</span><strong>v{{ model.version }}</strong></div>
+        <div><span class="label">Trained</span><strong>{{ model.trainedOn }}</strong></div>
+        <div><span class="label">Model error (24 h)</span><strong>{{ model.maeModel }} µg/m³</strong></div>
+        <div><span class="label">CAMS error (24 h)</span><strong>{{ model.maeCams }} µg/m³</strong></div>
+      </div>
+    </section>
+
+    <section id="limits">
+      <h2>Limits</h2>
+      <div class="callout">
+        <strong>Modelled, not measured.</strong>
+        Outside Europe, values come from the CAMS global model at about 45 km resolution.
+        They are estimates for the area, not readings from a ground station.
+      </div>
+      <p>If our model is unavailable, the site automatically shows the CAMS forecast instead.</p>
+    </section>
+
+    <section id="categories">
+      <h2>Air-quality categories</h2>
+      <p>Based on the US EPA PM2.5 breakpoints (2024 revision).</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Category</th><th>PM2.5 <span class="unit">(µg/m³)</span></th><th>What it means</th></tr>
+          </thead>
+          <tbody>
+            @for (cat of categories; track cat.label; let i = $index) {
+              <tr>
+                <td><span class="chip"><i [style.background]="cat.color"></i>{{ cat.label }}</span></td>
+                <td class="num">
+                  @if (i === 0) { 0 } @else { {{ categories[i - 1].max + 0.1 | number: '1.1-1' }} }
+                  @if ($last) { and more } @else { – {{ cat.max }} }
+                </td>
+                <td>{{ meanings[i] }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="credits">
+      <h2>Credits</h2>
+      <p>
+        Air-quality data: Copernicus Atmosphere Monitoring Service (CAMS), via Open-Meteo.com.
+        Map data © OpenStreetMap contributors.
+      </p>
+    </section>
+  </article>
+</div>

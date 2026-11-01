@@ -46,23 +46,6 @@
 .list a:hover { color: var(--accent); }
 .value { font-weight: 700; font-variant-numeric: tabular-nums; }
 
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 600;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 1px 8px 1px 4px;
-  white-space: nowrap;
-}
-.chip i {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: 1px solid #0003;
-}
 .muted { color: var(--muted); margin: 0; }
 
 // mobile : la liste passe sous la carte

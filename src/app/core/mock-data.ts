@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { City, CityDetails, ForecastPoint, HistoryPoint } from './models';
+import { City, CityDetails, ForecastPoint, HistoryPoint ,ModelInfo } from './models';
 
 // Mock "now": Nov 1st 2026, 07:00 Hanoi time
 const NOW = new Date('2026-11-01T07:00:00+07:00');
@@ -42,6 +42,9 @@ function makeForecast(current: number, seed: number): ForecastPoint[] {
 @Injectable({ providedIn: 'root' })
 export class MockData {
   readonly updatedAt = '07:00'; // e.g. '07:00'
+
+    // e.g. { version: '1.0.0', trainedOn: '2026-10-12', maeModel: 6.1, maeCams: 8.4 }
+  readonly modelInfo: ModelInfo = { version: '1.0.0', trainedOn: '2026-10-12', maeModel: 6.1, maeCams: 8.4 };
 
   // e.g. { id: 'hanoi', name: 'Hanoi', country: 'Vietnam', lat: 21.03, lon: 105.85, group: 'vietnam', pm25: 48.2 }
   readonly cities = signal<City[]>([

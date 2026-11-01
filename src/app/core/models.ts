@@ -64,3 +64,12 @@ export interface CityDetails {
   history: HistoryPoint[];      // last 72 hours
   forecast: ForecastPoint[];    // next 7 days (168 hours)
 }
+
+// ============================================= ABOUT =============================================
+// Model info, from GET /model/info
+export interface ModelInfo {
+  version: string;     // e.g. '1.0.0'
+  trainedOn: string;   // e.g. '2026-10-12'
+  maeModel: number;    // mean error of our model at 24 h, µg/m³, e.g. 6.1
+  maeCams: number;     // same for CAMS, e.g. 8.4
+}
