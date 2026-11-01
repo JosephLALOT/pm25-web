@@ -1,1 +1,26 @@
 /* You can add global styles to this file, and also import other style files */
+:root {
+  --ink: #212121;
+  --muted: #757575;
+  --line: #e0e0e0;
+  --bg: #f7f8f9;
+  --surface: #ffffff;   // nouveau : fond de l'en-tête, des cartes…
+  --accent: #2457c5;
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  --ink: #e6e8eb;
+  --muted: #9aa0a8;
+  --line: #3d424a;
+  --bg: #17191c;
+  --surface: #202328;
+  --accent: #7ea6ff;
+  color-scheme: dark;   // barres de défilement et champs en sombre aussi
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}

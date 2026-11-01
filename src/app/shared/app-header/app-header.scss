@@ -1,0 +1,38 @@
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.logo {
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--ink);
+  text-decoration: none;
+}
+nav { display: flex; align-items: center; gap: 24px; }
+nav a {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 500;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+}
+nav a:hover { color: var(--accent); }
+nav a.active {               // la classe ajoutée par routerLinkActive
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.theme {
+  display: grid;
+  place-items: center;
+  color: var(--ink);        // l'icône prend cette couleur
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px;
+  cursor: pointer;
+}

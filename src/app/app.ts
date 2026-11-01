@@ -1,12 +1,11 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { AppHeader } from './shared/app-header/app-header';
 
 @Component({
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, AppHeader],
   selector: 'app-root',
   styleUrl: './app.scss',
   templateUrl: './app.html',
 })
-export class App {
-  protected readonly title = signal('pm25-web');
-}
+export class App {}
