@@ -1,1 +1,45 @@
-<p>map-page works!</p>
+<div class="layout">
+  <section class="map-wrap">
+    <div #map class="map" role="region" aria-label="Map of monitored cities"></div>
+
+    <div class="legend">
+      <span class="muted">PM2.5 (µg/m³) · US EPA categories</span>
+      <div class="chips">
+        @for (cat of categories; track cat.label) {
+          <span class="chip"><i [style.background]="cat.color"></i>{{ cat.short }}</span>
+        }
+      </div>
+    </div>
+  </section>
+
+  <aside class="list">
+    <h2>Locations</h2>
+    <p class="muted">Updated {{ updatedAt }}</p>
+
+    <h3>Vietnam</h3>
+    <ul>
+      @for (c of vietnam(); track c.id) {
+        <li>
+          <a [routerLink]="['/city', c.id]">
+            <span class="name">{{ c.name }}</span>
+            <span class="value">{{ c.pm25 }}</span>
+            <span class="chip"><i [style.background]="c.cat.color"></i>{{ c.cat.short }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+
+    <h3>Other countries</h3>
+    <ul>
+      @for (c of others(); track c.id) {
+        <li>
+          <a [routerLink]="['/city', c.id]">
+            <span class="name">{{ c.name }}</span>
+            <span class="value">{{ c.pm25 }}</span>
+            <span class="chip"><i [style.background]="c.cat.color"></i>{{ c.cat.short }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </aside>
+</div>
