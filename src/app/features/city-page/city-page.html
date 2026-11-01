@@ -1,1 +1,71 @@
-<p>city-page works!</p>
+<nav class="city-bar" aria-label="Cities">
+  @for (c of cities(); track c.id) {
+    <a [routerLink]="['/city', c.id]" routerLinkActive="active">{{ c.name }}</a>
+  }
+</nav>
+
+@if (city(); as c) {
+  <header class="city-head">
+    <h1>{{ c.name }} <span class="muted">· {{ c.country }}</span></h1>
+    <div class="now">
+      <span class="big">{{ c.pm25 }}</span>
+      <span class="muted">µg/m³</span>
+      <span class="chip"><i [style.background]="category()?.color"></i>{{ category()?.label }}</span>
+      <span class="muted small">now · {{ updatedAt }}</span>
+    </div>
+  </header>
+
+  <section class="card chart-card">
+    <h2>PM2.5 in {{ c.name }} <span class="muted">(µg/m³, hourly)</span></h2>
+    <div class="chart-placeholder">The chart comes in step 4</div>
+  </section>
+
+  @if (details(); as d) {
+    <section class="grid">
+      <div class="card stat">
+        <span class="label">Last 24 h</span>
+        <strong>avg {{ last24()?.avg | number: '1.1-1' }}</strong>
+        <span class="sub">min {{ last24()?.min }} · max {{ last24()?.max }}</span>
+      </div>
+      <div class="card stat">
+        <span class="label">Forecast peak</span>
+        <strong>{{ peak()?.value }} at {{ peak()?.time | date: 'HH:mm' }}</strong>
+        <span class="sub">{{ peak()?.cat?.label }}</span>
+      </div>
+      <div class="card stat">
+        <span class="label">Next 24 h above 35.4</span>
+        <strong>{{ hoursAbove() }} hours</strong>
+        <span class="sub">sensitive groups at risk</span>
+      </div>
+      <div class="card stat">
+        <span class="label">US AQI</span>
+        <strong>{{ d.usAqi }}</strong>
+        <span class="sub">from Open-Meteo</span>
+      </div>
+    </section>
+
+    <h2 class="section-title">Weather now</h2>
+    <section class="grid">
+      <div class="card stat"><span class="label">General weather</span><strong>{{ d.weather.condition }}</strong></div>
+      <div class="card stat"><span class="label">Temperature</span><strong>{{ d.weather.temperature }} °C</strong></div>
+      <div class="card stat"><span class="label">Humidity</span><strong>{{ d.weather.humidity }} %</strong></div>
+      <div class="card stat"><span class="label">Wind</span><strong>{{ d.weather.windKmh }} km/h {{ d.weather.windDir }}</strong></div>
+    </section>
+
+    <section class="card advice">
+      <h2>Health advice</h2>
+      <p>{{ d.advice }}</p>
+    </section>
+
+    <p class="muted small">
+      Forecast by model v{{ d.modelVersion }}, generated {{ updatedAt }}.
+      <a routerLink="/about">How we forecast →</a>
+    </p>
+  }
+} @else {
+  <div class="not-found">
+    <h1>We don't track this city</h1>
+    <p class="muted">"{{ id() }}" is not in our list.</p>
+    <a routerLink="/">Back to map</a>
+  </div>
+}
