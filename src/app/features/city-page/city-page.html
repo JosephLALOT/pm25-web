@@ -16,8 +16,17 @@
   </header>
 
   <section class="card chart-card">
-    <h2>PM2.5 in {{ c.name }} <span class="muted">(µg/m³, hourly)</span></h2>
-    <div class="chart-placeholder">The chart comes in step 4</div>
+    <div class="chart-head">
+      <h2>PM2.5 in {{ c.name }} <span class="muted">(µg/m³, hourly)</span></h2>
+      <div class="horizon" role="group" aria-label="Forecast horizon">
+        @for (h of horizons; track h.hours) {
+          <button type="button" [class.on]="horizon() === h.hours" (click)="horizon.set(h.hours)">
+            {{ h.label }}
+          </button>
+        }
+      </div>
+    </div>
+    <div #chart class="chart" role="img" [attr.aria-label]="'PM2.5 history and forecast for ' + c.name"></div>
   </section>
 
   @if (details(); as d) {
