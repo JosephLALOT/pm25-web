@@ -4,6 +4,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import * as echarts from 'echarts';
 import { MockData } from '../../core/mock-data';
 import { CATEGORIES, CityDetails, FORECAST_HOURS, categoryOf } from '../../core/models';
+import { chartWindow } from './chart-window';
 
 @Component({
   imports: [RouterLink, RouterLinkActive, DecimalPipe, DatePipe],
@@ -88,16 +89,17 @@ export class CityPage {
     const muted = css.getPropertyValue('--muted').trim();
     const line = css.getPropertyValue('--line').trim();
 
-    const forecast = d.forecast.slice(0, hours);
+    // zoom: the shorter the horizon, the less history, so the forecast is drawn bigger
+    const { forecast, history, start } = chartWindow(d, hours);
     const lastObservation = d.history[d.history.length - 1].time;
 
     // [time, value] pairs, the format ECharts expects on a time axis
-    const measured = d.history.map(p => [p.time, p.pm25]);
+    const measured = history.map(p => [p.time, p.pm25]);
     const model = forecast.map(p => [p.time, p.model]);
     const cams = forecast.map(p => [p.time, p.cams]);
 
-    // top of the y axis: highest value + 15 %, rounded to 10
-    const top = Math.max(...d.history.map(p => p.pm25), ...forecast.map(p => p.model), ...forecast.map(p => p.cams));
+    // top of the y axis: highest visible value + 15 %, rounded to 10
+    const top = Math.max(...history.map(p => p.pm25), ...forecast.map(p => p.model), ...forecast.map(p => p.cams));
     const yMax = Math.ceil((top * 1.15) / 10) * 10;
 
     return {
@@ -105,6 +107,7 @@ export class CityPage {
       grid: { left: 48, right: 16, top: 24, bottom: 56 },
       xAxis: {
         type: 'time',
+        min: start,
         axisLabel: { color: muted },
         axisLine: { lineStyle: { color: line } },
       },
