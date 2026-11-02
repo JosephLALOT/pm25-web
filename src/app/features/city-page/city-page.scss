@@ -29,8 +29,20 @@
   margin-bottom: 16px;
 }
 .city-head h1 { margin: 0; font-size: 28px; }
+.station { margin: 2px 0 0; }
 .now { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 .big { font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+// data freshness: green dot when fresh, orange when stale
+.freshness { display: inline-flex; align-items: center; gap: 6px; }
+.freshness::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2e9e4f;
+}
+.freshness.stale::before { background: #e08a00; }
 
 // ---------- cards ----------
 .card {

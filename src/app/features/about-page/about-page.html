@@ -40,8 +40,9 @@
       <h2>How we forecast</h2>
       <p>
         Our model was trained by the data science part of the team on past PM2.5 values.
-        Every hour, it predicts the next hours and days for each city. We show it next to the
-        CAMS forecast so you can compare both.
+        Every hour, it predicts PM2.5 for each monitoring station, from 1 to 30 hours ahead
+        (h+1 to h+30). Forecasts are made for the station, not for the whole city.
+        We show it next to the CAMS forecast so you can compare both.
       </p>
       <div class="model-box">
         <div><span class="label">Model</span><strong>v{{ model.version }}</strong></div>

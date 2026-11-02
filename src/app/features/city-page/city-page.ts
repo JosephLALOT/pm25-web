@@ -3,7 +3,7 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import * as echarts from 'echarts';
 import { MockData } from '../../core/mock-data';
-import { CATEGORIES, CityDetails, categoryOf } from '../../core/models';
+import { CATEGORIES, CityDetails, FORECAST_HOURS, categoryOf } from '../../core/models';
 
 @Component({
   imports: [RouterLink, RouterLinkActive, DecimalPipe, DatePipe],
@@ -47,12 +47,8 @@ export class CityPage {
 
   // ---------------------------------------------------------------- NEW: chart
 
-  // horizon buttons. e.g. { hours: 72, label: '72 h' }
-  readonly horizons = [
-    { hours: 24, label: '24 h' },
-    { hours: 72, label: '72 h' },
-    { hours: 168, label: '7 days' },
-  ];
+  // horizon buttons, up to the model's last step (h+30). e.g. { hours: 12, label: '12 h' }
+  readonly horizons = [6, 12, 24, FORECAST_HOURS].map(hours => ({ hours, label: `${hours} h` }));
   readonly horizon = signal(24); // selected horizon, in hours
 
   // the <div #chart> of the HTML (may not exist if the city is unknown)
@@ -93,17 +89,15 @@ export class CityPage {
     const line = css.getPropertyValue('--line').trim();
 
     const forecast = d.forecast.slice(0, hours);
-    const now = d.history[d.history.length - 1].time;
+    const lastObservation = d.history[d.history.length - 1].time;
 
     // [time, value] pairs, the format ECharts expects on a time axis
     const measured = d.history.map(p => [p.time, p.pm25]);
     const model = forecast.map(p => [p.time, p.model]);
     const cams = forecast.map(p => [p.time, p.cams]);
-    const lower = forecast.map(p => [p.time, p.lower]);
-    const range = forecast.map(p => [p.time, Math.round((p.upper - p.lower) * 10) / 10]);
 
     // top of the y axis: highest value + 15 %, rounded to 10
-    const top = Math.max(...d.history.map(p => p.pm25), ...forecast.map(p => p.upper));
+    const top = Math.max(...d.history.map(p => p.pm25), ...forecast.map(p => p.model), ...forecast.map(p => p.cams));
     const yMax = Math.ceil((top * 1.15) / 10) * 10;
 
     return {
@@ -124,7 +118,7 @@ export class CityPage {
       },
       legend: {
         bottom: 0,
-        data: ['Measured', 'Our model', 'Model range', 'CAMS forecast'],
+        data: ['Measured', 'Our model', 'CAMS forecast'],
         textStyle: { color: ink },
       },
       tooltip: {
@@ -132,11 +126,7 @@ export class CityPage {
         formatter: (params: any) => {
           const list = Array.isArray(params) ? params : [params];
           const time = list[0].value[0] as string;
-          const lines = list
-            .filter(p => p.seriesName !== 'lower' && p.seriesName !== 'Model range')
-            .map(p => `${p.marker} ${p.seriesName}: <b>${p.value[1]}</b> µg/m³`);
-          const f = forecast.find(x => x.time === time);
-          if (f) lines.push(`Range: ${f.lower} – ${f.upper} µg/m³`);
+          const lines = list.map(p => `${p.marker} ${p.seriesName}: <b>${p.value[1]}</b> µg/m³`);
           const label = new Date(time).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' });
           return [`<b>${label}</b>`, ...lines].join('<br>');
         },
@@ -149,12 +139,12 @@ export class CityPage {
           showSymbol: false,
           lineStyle: { width: 2.5, color: ink },
           itemStyle: { color: ink },
-          // vertical "now" line
+          // vertical line at the last observation: measured on the left, forecast on the right
           markLine: {
             symbol: 'none',
-            label: { formatter: 'now', color: ink },
+            label: { formatter: 'last obs.', color: ink },
             lineStyle: { color: ink, type: 'solid' },
-            data: [{ xAxis: now }],
+            data: [{ xAxis: lastObservation }],
           },
           // category bands in the background
           markArea: {
@@ -167,25 +157,6 @@ export class CityPage {
                 { yAxis: b.to },
               ]) as any,
           },
-        },
-        // uncertainty band = an invisible "lower" line + the height of the band stacked on top
-        {
-          name: 'lower',
-          type: 'line',
-          data: lower,
-          stack: 'band',
-          showSymbol: false,
-          lineStyle: { opacity: 0 },
-        },
-        {
-          name: 'Model range',
-          type: 'line',
-          data: range,
-          stack: 'band',
-          showSymbol: false,
-          lineStyle: { opacity: 0 },
-          areaStyle: { color: muted, opacity: 0.25 },
-          itemStyle: { color: muted },
         },
         {
           name: 'Our model',

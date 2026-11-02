@@ -1,6 +1,6 @@
 <div class="layout">
   <section class="map-wrap">
-    <div #map class="map" role="region" aria-label="Map of monitored cities"></div>
+    <div #map class="map" role="region" aria-label="Map of monitoring stations"></div>
 
     <div class="legend">
       <span class="muted">PM2.5 (µg/m³) · US EPA categories</span>
@@ -21,7 +21,7 @@
       @for (c of vietnam(); track c.id) {
         <li>
           <a [routerLink]="['/city', c.id]">
-            <span class="name">{{ c.name }}</span>
+            <span class="name">{{ c.name }}<small class="station">{{ c.station }}</small></span>
             <span class="value">{{ c.pm25 }}</span>
             <span class="chip"><i [style.background]="c.cat.color"></i>{{ c.cat.short }}</span>
           </a>
@@ -34,7 +34,7 @@
       @for (c of others(); track c.id) {
         <li>
           <a [routerLink]="['/city', c.id]">
-            <span class="name">{{ c.name }}</span>
+            <span class="name">{{ c.name }}<small class="station">{{ c.station }}</small></span>
             <span class="value">{{ c.pm25 }}</span>
             <span class="chip"><i [style.background]="c.cat.color"></i>{{ c.cat.short }}</span>
           </a>

@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { City, CityDetails, ForecastPoint, HistoryPoint ,ModelInfo } from './models';
+import { City, CityDetails, FORECAST_HOURS, ForecastPoint, HistoryPoint ,ModelInfo } from './models';
 
 // Mock "now": Nov 1st 2026, 07:00 Hanoi time
 const NOW = new Date('2026-11-01T07:00:00+07:00');
@@ -15,28 +15,22 @@ function wave(base: number, i: number, seed: number): number {
   return Math.max(1, Math.round(v * 10) / 10);
 }
 
-// 72 past hours (-71 h → 0 h). e.g. { time: '2026-11-01T00:00:00.000Z', pm25: 48.2 }
-function makeHistory(current: number, seed: number): HistoryPoint[] {
+// 72 past hours, the last one being the last observation (lagHours before NOW).
+// e.g. { time: '2026-11-01T00:00:00.000Z', pm25: 48.2 }
+function makeHistory(current: number, seed: number, lagHours = 0): HistoryPoint[] {
   return Array.from({ length: 72 }, (_, k) => {
-    const h = k - 71;
-    return { time: hoursFrom(h), pm25: h === 0 ? current : wave(current, k, seed) };
+    const h = k - 71 - lagHours;
+    return { time: hoursFrom(h), pm25: k === 71 ? current : wave(current, k, seed) };
   });
 }
 
-// 168 next hours (+1 h → +7 days). e.g. { time: '…', model: 51.0, lower: 48.9, upper: 53.1, cams: 47.2 }
+// h+1 → h+30 after NOW. e.g. { time: '…', model: 51.0, cams: 47.2 }
 function makeForecast(current: number, seed: number): ForecastPoint[] {
-  return Array.from({ length: 168 }, (_, k) => {
-    const h = k + 1;
-    const model = wave(current, 72 + k, seed);
-    const spread = 2 + h * 0.08; // uncertainty grows with time
-    return {
-      time: hoursFrom(h),
-      model,
-      lower: Math.max(0, Math.round((model - spread) * 10) / 10),
-      upper: Math.round((model + spread) * 10) / 10,
-      cams: wave(current * 0.95, 72 + k, seed + 2),
-    };
-  });
+  return Array.from({ length: FORECAST_HOURS }, (_, k) => ({
+    time: hoursFrom(k + 1),
+    model: wave(current, 72 + k, seed),
+    cams: wave(current * 0.95, 72 + k, seed + 2),
+  }));
 }
 
 @Injectable({ providedIn: 'root' })
@@ -46,11 +40,15 @@ export class MockData {
     // e.g. { version: '1.0.0', trainedOn: '2026-10-12', maeModel: 6.1, maeCams: 8.4 }
   readonly modelInfo: ModelInfo = { version: '1.0.0', trainedOn: '2026-10-12', maeModel: 6.1, maeCams: 8.4 };
 
-  // e.g. { id: 'hanoi', name: 'Hanoi', country: 'Vietnam', lat: 21.03, lon: 105.85, group: 'vietnam', pm25: 48.2 }
+  // One entry per station. The observation values are hard-coded until the API is connected.
+  // e.g. { id: 'hanoi', name: 'Hanoi', station: 'Hanoi', country: 'Vietnam', lat: 21.03, lon: 105.85, group: 'vietnam',
+  //        pm25: 48.2, observationTimestamp: '2026-11-01T00:00:00.000Z', dataFreshness: 'fresh' }
   readonly cities = signal<City[]>([
-    { id: 'hanoi',        name: 'Hanoi',        country: 'Vietnam',  lat: 21.03, lon: 105.85, group: 'vietnam', pm25: 48.2 },
-    { id: 'vientiane',    name: 'Vientiane',    country: 'Laos',     lat: 17.97, lon: 102.63, group: 'other',   pm25: 61.3 },
-    { id: 'kuala-lumpur', name: 'Kuala Lumpur', country: 'Malaysia', lat: 3.14,  lon: 101.69, group: 'other',   pm25: 14.5 },
+    { id: 'hanoi',     name: 'Hanoi',     station: 'Hanoi',                                  country: 'Vietnam',   lat: 21.03, lon: 105.85, group: 'vietnam', pm25: 48.2, observationTimestamp: hoursFrom(0),  dataFreshness: 'fresh' },
+    { id: 'bangkok',   name: 'Bangkok',   station: 'The Government Public Relations Department', country: 'Thailand',  lat: 13.76, lon: 100.50, group: 'other',   pm25: 38.7, observationTimestamp: hoursFrom(0),  dataFreshness: 'fresh' },
+    { id: 'jakarta',   name: 'Jakarta',   station: 'Jakarta Central',                        country: 'Indonesia', lat: -6.18, lon: 106.83, group: 'other',   pm25: 72.4, observationTimestamp: hoursFrom(0),  dataFreshness: 'fresh' },
+    { id: 'vientiane', name: 'Vientiane', station: 'Vientiane',                              country: 'Laos',      lat: 17.97, lon: 102.63, group: 'other',   pm25: 61.3, observationTimestamp: hoursFrom(0),  dataFreshness: 'fresh' },
+    { id: 'yangon',    name: 'Yangon',    station: 'Rangoon',                                country: 'Myanmar',   lat: 16.84, lon: 96.17,  group: 'other',   pm25: 21.6, observationTimestamp: hoursFrom(-3), dataFreshness: 'stale' },
   ]);
 
   private readonly detailsById: Record<string, CityDetails> = {
@@ -62,6 +60,22 @@ export class MockData {
       history: makeHistory(48.2, 0),
       forecast: makeForecast(48.2, 0),
     },
+    bangkok: {
+      usAqi: 109,
+      modelVersion: '1.0.0',
+      advice: 'Sensitive groups: limit outdoor activity.',
+      weather: { condition: 'Cloudy', temperature: 32, humidity: 70, windKmh: 8, windDir: 'SW' },
+      history: makeHistory(38.7, 6),
+      forecast: makeForecast(38.7, 6),
+    },
+    jakarta: {
+      usAqi: 163,
+      modelVersion: '1.0.0',
+      advice: 'Everyone: limit outdoor activity.',
+      weather: { condition: 'Cloudy', temperature: 30, humidity: 75, windKmh: 7, windDir: 'E' },
+      history: makeHistory(72.4, 9),
+      forecast: makeForecast(72.4, 9),
+    },
     vientiane: {
       usAqi: 154,
       modelVersion: '1.0.0',
@@ -70,13 +84,13 @@ export class MockData {
       history: makeHistory(61.3, 3),
       forecast: makeForecast(61.3, 3),
     },
-    'kuala-lumpur': {
-      usAqi: 56,
+    yangon: {
+      usAqi: 74,
       modelVersion: '1.0.0',
       advice: 'Air quality is acceptable.',
-      weather: { condition: 'Rainy', temperature: 31, humidity: 84, windKmh: 9, windDir: 'SW' },
-      history: makeHistory(14.5, 6),
-      forecast: makeForecast(14.5, 6),
+      weather: { condition: 'Sunny', temperature: 31, humidity: 60, windKmh: 5, windDir: 'S' },
+      history: makeHistory(21.6, 12, 3), // last observation is 3 h old (stale)
+      forecast: makeForecast(21.6, 12),
     },
   };
 
@@ -85,7 +99,7 @@ export class MockData {
     return this.cities().find(c => c.id === id);
   }
 
-  // e.g. details('hanoi') → { usAqi: 132, advice: '…', weather: {…}, history: [72], forecast: [168] }
+  // e.g. details('hanoi') → { usAqi: 132, advice: '…', weather: {…}, history: [72], forecast: [30] }
   details(id: string): CityDetails | undefined {
     return this.detailsById[id];
   }

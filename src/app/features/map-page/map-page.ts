@@ -38,6 +38,10 @@ export class MapPage {
   private initMap() {
     const map = L.map(this.mapEl().nativeElement).setView([14, 106], 5);
 
+    // les stations vont de Jakarta à Hanoi: on cadre la carte pour toutes les voir
+    const bounds = L.latLngBounds(this.sorted().map(c => [c.lat, c.lon] as L.LatLngTuple));
+    if (bounds.isValid()) map.fitBounds(bounds, { padding: [40, 40] });
+
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
       attribution: '© OpenStreetMap contributors',
@@ -51,12 +55,21 @@ export class MapPage {
         fillColor: c.cat.color,
         fillOpacity: 0.9,
       })
-        .bindTooltip(`${c.name}: ${c.pm25} µg/m³ (${c.cat.label})`)
+        .bindTooltip(this.tooltip(c))
         .on('click', () => this.router.navigate(['/city', c.id]))
         .addTo(map);
     }
 
     // quand on quitte la page, on détruit la carte proprement
     this.destroyRef.onDestroy(() => map.remove());
+  }
+
+  // construit en DOM (pas en HTML) car le nom de la station viendra de l'API
+  private tooltip(c: { name: string; station: string; pm25: number; cat: { label: string } }): HTMLElement {
+    const el = document.createElement('div');
+    const title = document.createElement('strong');
+    title.textContent = c.name;
+    el.append(title, document.createElement('br'), `Station: ${c.station}`, document.createElement('br'), `${c.pm25} µg/m³ (${c.cat.label})`);
+    return el;
   }
 }

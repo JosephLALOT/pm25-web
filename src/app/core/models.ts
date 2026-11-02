@@ -2,11 +2,14 @@
 export interface City {
   id: string;                    // used in the URL, e.g. 'hanoi' → /city/hanoi
   name: string;                  // e.g. 'Hanoi'
+  station: string;               // monitoring station our forecasts are made for, e.g. 'Rangoon'
   country: string;               // e.g. 'Vietnam'
   lat: number;                   // e.g. 21.03
   lon: number;                   // e.g. 105.85
   group: 'vietnam' | 'other';    // e.g. 'vietnam'
-  pm25: number;                  // current value in µg/m³, e.g. 48.2
+  pm25: number;                  // latest observed value in µg/m³, e.g. 48.2
+  observationTimestamp: string;  // ISO date of that observation, e.g. '2026-11-01T00:00:00.000Z'
+  dataFreshness: 'fresh' | 'stale'; // e.g. 'fresh'
 }
 
 export interface Category {
@@ -46,12 +49,13 @@ export interface HistoryPoint {
   pm25: number;          // µg/m³
 }
 
+// The model forecasts h+1 to h+30 (hours after the last run)
+export const FORECAST_HOURS = 30;
+
 // One forecast hour
 export interface ForecastPoint {
   time: string;          // ISO date
   model: number;         // our model's forecast, e.g. 51.0
-  lower: number;         // uncertainty low bound, e.g. 48.9
-  upper: number;         // uncertainty high bound, e.g. 53.1
   cams: number;          // CAMS forecast (baseline), e.g. 47.2
 }
 
@@ -62,7 +66,7 @@ export interface CityDetails {
   modelVersion: string;         // e.g. '1.0.0'
   weather: Weather;
   history: HistoryPoint[];      // last 72 hours
-  forecast: ForecastPoint[];    // next 7 days (168 hours)
+  forecast: ForecastPoint[];    // h+1 to h+30 (FORECAST_HOURS points)
 }
 
 // ============================================= ABOUT =============================================

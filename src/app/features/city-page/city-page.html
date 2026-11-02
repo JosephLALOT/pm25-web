@@ -6,18 +6,22 @@
 
 @if (city(); as c) {
   <header class="city-head">
-    <h1>{{ c.name }} <span class="muted">· {{ c.country }}</span></h1>
+    <div>
+      <h1>{{ c.name }} <span class="muted">· {{ c.country }}</span></h1>
+      <p class="station muted small">Station: {{ c.station }}</p>
+    </div>
     <div class="now">
       <span class="big">{{ c.pm25 }}</span>
       <span class="muted">µg/m³</span>
       <span class="chip"><i [style.background]="category()?.color"></i>{{ category()?.label }}</span>
-      <span class="muted small">now · {{ updatedAt }}</span>
+      <span class="muted small">Observed {{ c.observationTimestamp | date: 'd MMM, HH:mm' }}</span>
+      <span class="freshness small" [class.stale]="c.dataFreshness === 'stale'">Data {{ c.dataFreshness }}</span>
     </div>
   </header>
 
   <section class="card chart-card">
     <div class="chart-head">
-      <h2>PM2.5 in {{ c.name }} <span class="muted">(µg/m³, hourly)</span></h2>
+      <h2>PM2.5 at {{ c.station }} <span class="muted">(station, µg/m³, hourly)</span></h2>
       <div class="horizon" role="group" aria-label="Forecast horizon">
         @for (h of horizons; track h.hours) {
           <button type="button" [class.on]="horizon() === h.hours" (click)="horizon.set(h.hours)">
@@ -26,7 +30,7 @@
         }
       </div>
     </div>
-    <div #chart class="chart" role="img" [attr.aria-label]="'PM2.5 history and forecast for ' + c.name"></div>
+    <div #chart class="chart" role="img" [attr.aria-label]="'PM2.5 history and forecast for station ' + c.station + ', ' + c.name"></div>
   </section>
 
   @if (details(); as d) {
@@ -67,7 +71,7 @@
     </section>
 
     <p class="muted small">
-      Forecast by model v{{ d.modelVersion }}, generated {{ updatedAt }}.
+      Forecast for station {{ c.station }} by model v{{ d.modelVersion }}, generated {{ updatedAt }}, from h+1 to h+{{ d.forecast.length }}.
       <a routerLink="/about">How we forecast →</a>
     </p>
   }
