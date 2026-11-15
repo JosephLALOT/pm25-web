@@ -2,7 +2,7 @@ import { Component, DestroyRef, ElementRef, computed, effect, inject, input, sig
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import * as echarts from 'echarts';
-import { MockData } from '../../core/mock-data';
+import { ApiData } from '../../core/api-data';
 import { CATEGORIES, CityDetails, FORECAST_HOURS, categoryOf } from '../../core/models';
 import { chartWindow } from './chart-window';
 
@@ -13,7 +13,7 @@ import { chartWindow } from './chart-window';
   templateUrl: './city-page.html',
 })
 export class CityPage {
-  private data = inject(MockData);
+  private data = inject(ApiData);
 
   // filled by the router: /city/hanoi → id() === 'hanoi'
   readonly id = input.required<string>();
@@ -57,6 +57,9 @@ export class CityPage {
   private chart?: echarts.ECharts;
 
   constructor() {
+    // fetch current values and history of the city shown (once per city)
+    effect(() => this.data.loadDetails(this.id()));
+
     // redraw every time the div, the city or the horizon changes
     effect(() => {
       const el = this.chartEl()?.nativeElement;

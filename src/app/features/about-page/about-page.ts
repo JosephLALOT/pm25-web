@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { MockData } from '../../core/mock-data';
+import { ApiData } from '../../core/api-data';
 import { CATEGORIES } from '../../core/models';
 
 @Component({
@@ -11,7 +11,7 @@ import { CATEGORIES } from '../../core/models';
   templateUrl: './about-page.html',
 })
 export class AboutPage {
-  readonly model = inject(MockData).modelInfo;
+  readonly model = inject(ApiData).modelInfo;
   readonly categories = CATEGORIES;
 
   // what each category means, in the same order as CATEGORIES

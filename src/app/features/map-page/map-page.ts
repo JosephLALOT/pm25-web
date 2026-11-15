@@ -1,7 +1,7 @@
 import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, viewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import * as L from 'leaflet';
-import { MockData } from '../../core/mock-data';
+import { ApiData } from '../../core/api-data';
 import { CATEGORIES, categoryOf } from '../../core/models';
 
 @Component({
@@ -11,7 +11,7 @@ import { CATEGORIES, categoryOf } from '../../core/models';
   templateUrl: './map-page.html',
 })
 export class MapPage {
-  private data = inject(MockData);
+  private data = inject(ApiData);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
 
