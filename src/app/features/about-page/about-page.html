@@ -39,17 +39,23 @@
     <section id="forecast">
       <h2>How we forecast</h2>
       <p>
-        Our model was trained by the data science part of the team on past PM2.5 values.
-        Every hour, it predicts PM2.5 for each monitoring station, from 1 to 30 hours ahead
-        (h+1 to h+30). Forecasts are made for the station, not for the whole city.
-        We show it next to the CAMS forecast so you can compare both.
+        The forecast model is built by the data science part of the team from past PM2.5 values.
+        Once it is delivered, it will run every hour and its forecasts will be shown next to the
+        CAMS forecast so you can compare both.
       </p>
-      <div class="model-box">
-        <div><span class="label">Model</span><strong>v{{ model.version }}</strong></div>
-        <div><span class="label">Trained</span><strong>{{ model.trainedOn }}</strong></div>
-        <div><span class="label">Model error (24 h)</span><strong>{{ model.maeModel }} µg/m³</strong></div>
-        <div><span class="label">CAMS error (24 h)</span><strong>{{ model.maeCams }} µg/m³</strong></div>
-      </div>
+      @if (model; as m) {
+        <div class="model-box">
+          <div><span class="label">Model</span><strong>v{{ m.version }}</strong></div>
+          <div><span class="label">Trained</span><strong>{{ m.trainedOn }}</strong></div>
+          <div><span class="label">Model error (24 h)</span><strong>{{ m.maeModel }} µg/m³</strong></div>
+          <div><span class="label">CAMS error (24 h)</span><strong>{{ m.maeCams }} µg/m³</strong></div>
+        </div>
+      } @else {
+        <div class="callout">
+          <strong>Model not available yet.</strong>
+          The forecasts shown come from CAMS.
+        </div>
+      }
     </section>
 
     <section id="limits">

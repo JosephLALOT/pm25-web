@@ -4,7 +4,8 @@ import { firstValueFrom, forkJoin } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { City, CityDetails, ModelInfo, Weather } from './models';
 
-// ---- API responses (snake_case, see pm25-platform ARCHITECTURE.md section 10)
+// ---- API responses (pm25-platform contracts/openapi.yaml). A missing value is
+// omitted, never null.
 
 interface ApiCity {
   slug: string;
@@ -15,28 +16,30 @@ interface ApiCity {
 }
 
 interface ApiOverview {
-  items: (ApiCity & { time: string | null; pm2_5: number | null; stale: boolean })[];
+  updated_at?: string;
+  items: (ApiCity & { time?: string; pm2_5?: number; stale: boolean })[];
 }
 
 interface ApiCurrent {
-  us_aqi: number | null;
-  advice: string | null;
-  weather: {
-    temperature_2m: number | null;
-    relative_humidity_2m: number | null;
-    wind_speed_10m: number | null;
-    wind_direction_10m: number | null;
-    weather_code: number | null;
-  } | null;
+  us_aqi?: number;
+  advice?: string;
+  weather?: {
+    time: string;
+    temperature_c?: number;
+    relative_humidity_pct?: number;
+    wind_speed_kmh?: number;
+    wind_direction_deg?: number;
+    weather_code?: number;
+  };
 }
 
 interface ApiHistory {
-  points: { time: string; pm2_5: number | null }[];
+  points: { time: string; pm2_5: number }[];
 }
 
 // Same public surface as MockData, filled from the API (pm25-platform).
 // The forecast and the model info come from the forecasts module, not built yet:
-// until then, forecast is empty and modelInfo keeps its placeholder values.
+// until then, forecast is empty and modelInfo is null (no model delivered).
 @Injectable({ providedIn: 'root' })
 export class ApiData {
   private http = inject(HttpClient);
@@ -45,8 +48,8 @@ export class ApiData {
   readonly cities = signal<City[]>([]);
   updatedAt = ''; // local time of the latest observation, e.g. '07:00'
 
-  // placeholder until GET /model/info exists
-  readonly modelInfo: ModelInfo = { version: '1.0.0', trainedOn: '2026-10-12', maeModel: 6.1, maeCams: 8.4 };
+  // null until GET /model/info exists and a model is active
+  readonly modelInfo: ModelInfo | null = null;
 
   private readonly detailsById = signal<Record<string, CityDetails>>({});
   private readonly loading = new Set<string>();
@@ -57,7 +60,7 @@ export class ApiData {
     try {
       const res = await firstValueFrom(this.http.get<ApiOverview>(`${this.base}/overview`));
       const cities = res.items
-        .filter(c => c.pm2_5 !== null && c.time !== null) // no data yet: not shown
+        .filter(c => c.pm2_5 !== undefined && c.time !== undefined) // no data yet: not shown
         .map(c => toCity(c, c.pm2_5!, c.time!, c.stale));
       this.cities.set(cities);
       const latest = Math.max(...cities.map(c => Date.parse(c.observationTimestamp)));
@@ -125,14 +128,12 @@ export function toDetails(current: ApiCurrent, history: ApiHistory): CityDetails
     modelVersion: '—', // no model forecast yet
     weather: {
       condition: condition(w?.weather_code ?? null),
-      temperature: Math.round(w?.temperature_2m ?? 0),
-      humidity: Math.round(w?.relative_humidity_2m ?? 0),
-      windKmh: Math.round(w?.wind_speed_10m ?? 0),
-      windDir: compass(w?.wind_direction_10m ?? null),
+      temperature: Math.round(w?.temperature_c ?? 0),
+      humidity: Math.round(w?.relative_humidity_pct ?? 0),
+      windKmh: Math.round(w?.wind_speed_kmh ?? 0),
+      windDir: compass(w?.wind_direction_deg ?? null),
     },
-    history: history.points
-      .filter(p => p.pm2_5 !== null)
-      .map(p => ({ time: p.time, pm25: p.pm2_5! })),
+    history: history.points.map(p => ({ time: p.time, pm25: p.pm2_5 })),
     forecast: [],
   };
 }

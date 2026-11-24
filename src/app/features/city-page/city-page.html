@@ -40,16 +40,18 @@
         <strong>avg {{ last24()?.avg | number: '1.1-1' }}</strong>
         <span class="sub">min {{ last24()?.min }} · max {{ last24()?.max }}</span>
       </div>
-      <div class="card stat">
-        <span class="label">Forecast peak</span>
-        <strong>{{ peak()?.value }} at {{ peak()?.time | date: 'HH:mm' }}</strong>
-        <span class="sub">{{ peak()?.cat?.label }}</span>
-      </div>
-      <div class="card stat">
-        <span class="label">Next 24 h above 35.4</span>
-        <strong>{{ hoursAbove() }} hours</strong>
-        <span class="sub">sensitive groups at risk</span>
-      </div>
+      @if (next24().length > 0) {
+        <div class="card stat">
+          <span class="label">Forecast peak</span>
+          <strong>{{ peak()?.value }} at {{ peak()?.time | date: 'HH:mm' }}</strong>
+          <span class="sub">{{ peak()?.cat?.label }}</span>
+        </div>
+        <div class="card stat">
+          <span class="label">Next 24 h above 35.4</span>
+          <strong>{{ hoursAbove() }} hours</strong>
+          <span class="sub">sensitive groups at risk</span>
+        </div>
+      }
       <div class="card stat">
         <span class="label">US AQI</span>
         <strong>{{ d.usAqi }}</strong>
@@ -71,7 +73,11 @@
     </section>
 
     <p class="muted small">
-      Forecast for station {{ c.station }} by model v{{ d.modelVersion }}, generated {{ updatedAt }}, from h+1 to h+{{ d.forecast.length }}.
+      @if (d.forecast.length > 0) {
+        Forecast for station {{ c.station }} by model v{{ d.modelVersion }}, generated {{ updatedAt }}, from h+1 to h+{{ d.forecast.length }}.
+      } @else {
+        No model forecast yet.
+      }
       <a routerLink="/about">How we forecast →</a>
     </p>
   }
