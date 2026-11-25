@@ -1,0 +1,25 @@
+<section class="card">
+  <h1>Log in</h1>
+
+  <form (ngSubmit)="submit()">
+    <label>
+      E-mail
+      <input type="email" name="email" autocomplete="username" required [(ngModel)]="email" />
+    </label>
+    <label>
+      Password
+      <input type="password" name="password" autocomplete="current-password" required [(ngModel)]="password" />
+    </label>
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+
+    <button type="submit" [disabled]="busy()">Log in</button>
+  </form>
+
+  <p class="hint">
+    Test account (fake login, until pm25-auth runs):
+    <code>{{ fake.email }}</code> / <code>{{ fake.password }}</code>
+  </p>
+</section>

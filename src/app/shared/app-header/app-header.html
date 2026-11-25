@@ -4,6 +4,9 @@
     <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Map</a>
     <a routerLink="/">Cities</a>
     <a routerLink="/about" routerLinkActive="active">About</a>
+    @if (auth.isAdmin()) {
+      <a routerLink="/admin" routerLinkActive="active">Admin</a>
+    }
 
     <button type="button" class="theme" (click)="toggleTheme()"
             [attr.aria-label]="dark() ? 'Switch to light mode' : 'Switch to dark mode'">

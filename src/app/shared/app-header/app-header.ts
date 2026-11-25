@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Auth } from '../../core/auth/auth';
 
 @Component({
   imports: [RouterLink, RouterLinkActive],
@@ -8,6 +9,8 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   templateUrl: './app-header.html',
 })
 export class AppHeader {
+  readonly auth = inject(Auth);  // le lien Admin n'apparaît que pour un admin connecté
+
   // thème de départ : celui choisi la dernière fois, sinon celui du système
   dark = signal(
     localStorage.getItem('theme') === 'dark' ||

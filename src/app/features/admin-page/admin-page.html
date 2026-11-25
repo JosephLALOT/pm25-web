@@ -1,0 +1,66 @@
+<div class="top">
+  <h1>Back-office</h1>
+  <div class="who">
+    {{ auth.user()?.email }}
+    <button type="button" class="ghost" (click)="logout()">Log out</button>
+  </div>
+</div>
+
+<p class="fake">Fake data: changes are kept in memory only, until the admin API is connected.</p>
+
+<section>
+  <h2>Cities <span class="count">{{ activeCount() }} active / {{ cities().length }}</span></h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Slug</th>
+        <th>Name</th>
+        <th>Country</th>
+        <th>Latitude</th>
+        <th>Longitude</th>
+        <th>Time zone</th>
+        <th>Created</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (c of cities(); track c.slug) {
+        <tr [class.inactive]="!c.is_active">
+          <td><code>{{ c.slug }}</code></td>
+          <td>{{ c.name }}</td>
+          <td>{{ c.country }}</td>
+          <td>{{ c.latitude }}</td>
+          <td>{{ c.longitude }}</td>
+          <td>{{ c.timezone }}</td>
+          <td>{{ c.created_at | date: 'yyyy-MM-dd' }}</td>
+          <td>{{ c.is_active ? 'Active' : 'Inactive' }}</td>
+          <td>
+            @if (c.is_active) {
+              <button type="button" class="ghost" (click)="setActive(c.slug, false)">Deactivate</button>
+            } @else {
+              <button type="button" class="ghost" (click)="setActive(c.slug, true)">Reactivate</button>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Add a city</h2>
+  <form class="add" (ngSubmit)="add()">
+    <label>Slug <input name="slug" placeholder="hanoi" required [(ngModel)]="form.slug" /></label>
+    <label>Name <input name="name" placeholder="Hanoi" required [(ngModel)]="form.name" /></label>
+    <label>Country <input name="country" placeholder="VN" maxlength="2" required [(ngModel)]="form.country" /></label>
+    <label>Latitude <input name="latitude" type="number" step="any" required [(ngModel)]="form.latitude" /></label>
+    <label>Longitude <input name="longitude" type="number" step="any" required [(ngModel)]="form.longitude" /></label>
+    <label>Time zone <input name="timezone" placeholder="Asia/Ho_Chi_Minh" required [(ngModel)]="form.timezone" /></label>
+    <button type="submit">Add</button>
+  </form>
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+</section>
